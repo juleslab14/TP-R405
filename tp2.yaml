@@ -1,0 +1,20 @@
+---
+- name: Mise à jour de l'OS
+  hosts: all
+  remote_user: vagrant
+
+  tasks:
+  - name: Mise à jour de l'OS avec apt
+    ansible.builtin.apt:
+      update_cache: yes
+      upgrade: yes
+  
+- name: Installation Apache2 sur WEB-1
+  hosts: web
+  remote_user: vagrant
+
+  tasks:
+  - name: Installation Apache2
+    ansible.builtin.apt:
+      name: apache2
+      state: present

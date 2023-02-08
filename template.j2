@@ -1,0 +1,21 @@
+$TTL 2H
+@    IN    SOA    {{ zone }}.  {{ zone }}.contact. (
+    2022013101     ; Serial
+    28800          ; Refresh
+    14400          ; Retry
+    604800         ; Expire - 1 week
+    86400          ; Minimum
+)
+{% for NS in zone_dns -%}
+{% if NS.isAuthoritative == True -%}
+{{ zone}}. IN NS {{NS.nom}}.{{zone}}.;
+{%endif-%}
+{% endfor -%}
+{% for host in zone_dns -%}
+{% if host.IPv4 != null -%}
+{{ host.nom }}.{{zone}}.    IN A    {{ host.IPv4 }};
+{%endif-%}
+{% if host.IPv6 != null -%}
+{{ host.nom }}.{{zone}}.    IN AAAA    {{ host.IPv6 }};
+{%endif-%}
+{% endfor -%}
