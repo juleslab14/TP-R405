@@ -2,7 +2,7 @@
 # # vi: set ft=ruby :
 # un autre commentaire
 $subnet = "192.168.57"
-$num_dns = 1 #max 9
+$num_dns = 2 #max 9
 $num_web = 1 #max 9
 
 if Vagrant.has_plugin?("vagrant-proxyconf")

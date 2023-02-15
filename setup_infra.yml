@@ -1,0 +1,67 @@
+---
+- name: Installation et config Bind9
+  hosts: dns
+  remote_user: vagrant
+
+  tasks:
+  - name: Installation Bind9
+    ansible.builtin.apt:
+      name: bind9
+      state: present
+  - name: numero de série
+    ansible.builtin.shell: date +%s
+    run_once: true
+    register: timestamp
+  - name: ajout de la zone
+    ansible.builtin.template:
+      src: labzone.j2
+      dest: /etc/bind/{{domaine_lab}}
+      group: bind
+      owner: bind
+  - name: modif named.conf.local
+    ansible.builtin.blockinfile:
+      path: /etc/bind/named.conf.local
+      block: |
+        zone "{{domaine_lab}}" IN {
+          type master;
+          file "/etc/bind/{{domaine_lab}}";
+        };
+  - name: reload bind9
+    ansible.builtin.service:
+      name: bind9
+      state: restarted
+
+
+- name: configuration du DNS sur les hôtes
+  hosts: all
+  remote_user: vagrant
+  tasks:
+  - name: Import des tasks
+    ansible.builtin.import_tasks:
+      file: tasks/set_dns.yml
+
+
+- name: Installation et configuration LB
+  hosts: lb
+  remote_user: vagrant
+
+  tasks:
+  - name: update apt
+    ansible.builtin.apt:
+      update_cache: yes
+      upgrade: yes
+  - name: Installation lb
+    ansible.builtin.apt:
+      name: apache2
+      state: present
+  - name: Config en lb
+    ansible.builtin.template:
+      src: ./templates/lb-apache-conf.j2
+      dest: /etc/apache2/sites-available/000-default.conf
+      group: www-data
+      owner: www-data
+  - name: reload apache2
+    ansible.builtin.service:
+      name: apache2
+      state: restarted
+    when: /etc/apache2/sites-available is changed
